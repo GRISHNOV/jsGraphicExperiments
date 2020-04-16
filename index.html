@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Graphic Render</title>
+    <link rel="stylesheet" type="text/css" href="css/style.css">
+</head>
+<body>
+    <canvas id="workspace"></canvas>
+</body>
+    <script type="module">
+
+        import * as THREE from 'https://unpkg.com/three/build/three.module.js';
+        import {OrbitControls} from 'https://unpkg.com/three/examples/jsm/controls/OrbitControls.js';
+
+        function main() {
+            const canvas = document.querySelector('#workspace');
+            const renderer = new THREE.WebGLRenderer({canvas});
+
+            const fov = 75,
+                aspect = 2,
+                near = 0.1,
+                far = 50;
+
+            const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
+            camera.position.z = 10;
+
+            const controls = new OrbitControls(camera, canvas);
+            controls.target.set(0, 0, 0);
+            controls.update();
+
+            const scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x222222);
+
+            {
+                const color = 0xFFFFFF,
+                    intensity = 1,
+                    light = new THREE.DirectionalLight(color, intensity);
+
+                light.position.set(-1, 2, 4);
+                scene.add(light);
+            }
+
+            const boxWidth = 1,
+                 boxHeight = 1,
+                 boxDepth = 1,
+                 geometry = new THREE.BoxGeometry(boxWidth, boxHeight, boxDepth);
+
+            function makeInstance(geometry, color, x, y, z) {
+                const material = new THREE.MeshPhongMaterial({color});
+                const cube = new THREE.Mesh(geometry, material);
+                scene.add(cube);
+                cube.position.x = x;
+                cube.position.y = y;
+                cube.position.z = z;
+                return cube;
+            }
+
+            const cubes = [
+                makeInstance(geometry, 0xFF0000,  0, -2, 0),
+                makeInstance(geometry, 0xFF0000, -2, -2, 0),
+                makeInstance(geometry, 0xFF0000,  2, -2, 0),
+
+                makeInstance(geometry, 0xFFFFFF,  0, 2, 0),
+                makeInstance(geometry, 0xFFFFFF, -2, 2, 0),
+                makeInstance(geometry, 0xFFFFFF,  2, 2, 0),
+
+                makeInstance(geometry, 0x0000FF,  0, 0, 0),
+                makeInstance(geometry, 0x0000FF, -2, 0, 0),
+                makeInstance(geometry, 0x0000FF,  2, 0, 0),
+
+
+                makeInstance(geometry, 0xFF0000,  0, -2, 2),
+                makeInstance(geometry, 0xFF0000, -2, -2, 2),
+                makeInstance(geometry, 0xFF0000,  2, -2, 2),
+
+                makeInstance(geometry, 0xFFFFFF,  0, 2, 2),
+                makeInstance(geometry, 0xFFFFFF, -2, 2, 2),
+                makeInstance(geometry, 0xFFFFFF,  2, 2, 2),
+
+                makeInstance(geometry, 0x0000FF,  0, 0, 2),
+                makeInstance(geometry, 0x0000FF, -2, 0, 2),
+                makeInstance(geometry, 0x0000FF,  2, 0, 2),
+
+
+                makeInstance(geometry, 0xFF0000,  0, -2, -2),
+                makeInstance(geometry, 0xFF0000, -2, -2, -2),
+                makeInstance(geometry, 0xFF0000,  2, -2, -2),
+
+                makeInstance(geometry, 0xFFFFFF,  0, 2, -2),
+                makeInstance(geometry, 0xFFFFFF, -2, 2, -2),
+                makeInstance(geometry, 0xFFFFFF,  2, 2, -2),
+
+                makeInstance(geometry, 0x0000FF,  0, 0, -2),
+                makeInstance(geometry, 0x0000FF, -2, 0, -2),
+                makeInstance(geometry, 0x0000FF,  2, 0, -2),
+            ];
+
+            function resizeRendererToDisplaySize(renderer) {
+                const canvas = renderer.domElement;
+                const pixelRatio = window.devicePixelRatio;
+                const width = canvas.clientWidth * pixelRatio | 0;
+                const height = canvas.clientHeight * pixelRatio | 0;
+                const needResize = canvas.width !== width || canvas.height !== height;
+                if (needResize) {
+                    renderer.setSize(width, height, false);
+                }
+                return needResize;
+            }
+
+            function render(time) {
+                time *= 0.001;
+                if (resizeRendererToDisplaySize(renderer)) {
+                    const canvas = renderer.domElement;
+                    camera.aspect = canvas.clientWidth / canvas.clientHeight;
+                    camera.updateProjectionMatrix();
+                }
+                const canvas = renderer.domElement;
+                camera.aspect = canvas.clientWidth / canvas.clientHeight;
+                camera.updateProjectionMatrix();
+                cubes.forEach((cube, ndx) => {
+                    const speed = 1 + ndx * .01;
+                    const rot = time * speed;
+                    cube.rotation.x = rot;
+                    cube.rotation.y = rot;
+                });
+                renderer.render(scene, camera);
+                requestAnimationFrame(render);
+            }
+
+            requestAnimationFrame(render);
+        }
+
+        main();
+
+    </script>
+</html>
